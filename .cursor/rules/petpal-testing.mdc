@@ -1,0 +1,9 @@
+---
+description: PetPal TDD 与单元测试覆盖率要求
+alwaysApply: true
+---
+
+# 测试与质量
+
+- **TDD**：**先写测试再实现**。新功能与缺陷修复须有对应测试（前端如 Vitest / Testing Library；Rust 如 `cargo test`，与仓库约定一致）。
+- **覆盖率**：**单元测试覆盖率 ≥ 90%**（以 CI 或本地配置的 coverage 为准）；合并前不得无故降低。

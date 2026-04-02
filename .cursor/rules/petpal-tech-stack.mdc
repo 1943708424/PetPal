@@ -1,0 +1,12 @@
+---
+description: PetPal 固定技术栈（Tauri 2 + Svelte 5 + TS + Rust）
+alwaysApply: true
+---
+
+# 技术栈
+
+- **桌面壳**：Tauri **2.x**（与官方依赖、API 一致）。
+- **前端**：**Svelte 5** + **TypeScript**。无充分理由不得降级到 Svelte 4 或去掉类型层。
+- **原生 / 命令**：**Rust**（`src-tauri`、Tauri 命令与插件）。
+
+新增依赖、脚手架与示例须与上述版本线兼容；变更 major 或替换框架须评审并同步更新规则文件。

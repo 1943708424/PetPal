@@ -1,0 +1,48 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# SvelteKit / Vite（前端构建）
+.svelte-kit/
+build/
+dist/
+.vite/
+
+# Rust
+**/target/
+**/*.rs.bk
+*.pdb
+
+# Tauri 常见产物（根目录若单独构建）
+*.app
+*.dmg
+*.msi
+*.exe
+!petpal/src-tauri/icons/*.ico
+
+# 环境变量与密钥
+.env
+.env.*
+!.env.example
+
+# 操作系统
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE / 编辑器
+.idea/
+*.swp
+*.swo
+
+# 测试与覆盖率
+coverage/
+*.lcov
+
+# 日志与临时文件
+*.log
+*.tmp
+*.temp
