@@ -1,12 +1,22 @@
-import { defineConfig } from "vite";
+/// <reference types="node" />
 import { sveltekit } from "@sveltejs/kit/vite";
+import { defineConfig } from "vitest/config";
 
-// @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
   plugins: [sveltekit()],
+
+  // Vitest 下解析 Svelte 的 browser 条件，避免 `mount` 走到 server 入口
+  resolve: process.env.VITEST
+    ? { conditions: ["browser"] }
+    : undefined,
+
+  test: {
+    environment: "jsdom",
+    include: ["src/**/*.{test,spec}.ts"],
+  },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

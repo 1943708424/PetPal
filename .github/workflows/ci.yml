@@ -35,7 +35,17 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          components: rustfmt
+          components: rustfmt, clippy, llvm-tools-preview
+
+      - name: Install Linux native dependencies (Tauri)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
@@ -48,6 +58,9 @@ jobs:
       - name: Frontend — Svelte/TS 检查（svelte-check）
         run: npm run check
 
+      - name: Frontend — 单元测试（Vitest）
+        run: npm run test
+
       - name: Rust — 格式化检查（rustfmt）
         working-directory: petpal/src-tauri
         run: cargo fmt --all -- --check
@@ -55,6 +68,10 @@ jobs:
       - name: Rust — 单元测试
         working-directory: petpal/src-tauri
         run: cargo test --all-features
+
+      - name: Rust — 代码质量（clippy）
+        working-directory: petpal/src-tauri
+        run: cargo clippy --all-targets -- -D warnings
 
       - name: Install cargo-audit
         uses: taiki-e/install-action@v2
@@ -64,3 +81,12 @@ jobs:
       - name: Rust — 依赖漏洞扫描（cargo audit）
         working-directory: petpal/src-tauri
         run: cargo audit
+
+      - name: Install cargo-tarpaulin
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-tarpaulin
+
+      - name: Rust — 测试覆盖率门禁（tarpaulin）
+        working-directory: petpal/src-tauri
+        run: cargo tarpaulin --all-features --fail-under 90 --engine Llvm --include-files src/window_layout.rs --out Lcov
