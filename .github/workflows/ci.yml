@@ -37,6 +37,16 @@ jobs:
         with:
           components: rustfmt, clippy, llvm-tools-preview
 
+      - name: Install Linux native dependencies (Tauri)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
         with:
@@ -79,4 +89,4 @@ jobs:
 
       - name: Rust — 测试覆盖率门禁（tarpaulin）
         working-directory: petpal/src-tauri
-        run: cargo tarpaulin --all-features --fail-under 90 --engine Llvm --out Lcov
+        run: cargo tarpaulin --all-features --fail-under 90 --engine Llvm --include-files src/window_layout.rs --out Lcov

@@ -29,21 +29,18 @@
 
 ## 3. 覆盖率验证（Tarpulin）
 
-- 命令（尝试）：`cargo tarpaulin --all-features --out Stdout/Markdown ...`
-- 结果：覆盖率报告未能生成
-  - 现象：执行到 `cargo tarpaulin::config: Creating config` 后长时间无进一步输出，未产出可解析的覆盖率百分比。
-- 因此：**无法在本机环境确认覆盖率是否 ≥ 90%**（建议在 GitHub Actions 的 Linux runner 再跑一次覆盖率门禁）。
+- 命令：`cargo tarpaulin --all-features --engine Llvm --fail-under 90 --out Lcov --timeout 60`
+- 结果：**不通过**
+- 覆盖率结果：**64.00%**（低于 90% 门槛）
+- 关键行覆盖：
+  - `src/lib.rs`: 0/7
+  - `src/main.rs`: 0/2
+  - `src/window_layout.rs`: 16/16
 
 ## 4. 代码质量检查（Clippy）
 
 - 命令：`cargo clippy --all-targets -- -D warnings`
-- 结果：不通过
-- 失败原因（根因）：
-  - `clamp_window_position` 参数过多触发 `clippy::too_many_arguments`（8/7）
-  - `clamp_window_to_work_area` 参数过多触发 `clippy::too_many_arguments`（8/7）
-
-待修复建议（给开发 Agent）：
-- 用参数结构体替代多参数（推荐），或对这两个函数添加 `#[allow(clippy::too_many_arguments)]`（次选但需解释为什么能接受）。
+- 结果：**通过**
 
 ## 5. 依赖漏洞扫描（cargo audit）
 
@@ -54,22 +51,27 @@
   - 主要为 RustSec 的 “unmaintained / unsoundness” 类预警（如 gtk-rs GTK3 bindings no longer maintained，glib 的 unsoundness 等）
   - 本次扫描未看到需要“拒绝构建”的高危/致命漏洞结论（以 `cargo audit` 最终 exit code/拒绝项为准）
 
-## 6. 性能与稳定性（本阶段）
+## 6. CI 门禁校验（GitHub Actions）
+
+- 结论：**覆盖率门禁尚未能在 CI 上验证**
+- 原因：最新的工作流运行在 `Rust — 单元测试（cargo test）` 阶段失败，失败点为 GTK/相关 native 依赖构建时的 `pkg-config exited with status code 1`（如 `gobject-sys` / `gdk-sys` / `gio-sys` / `glib-sys`），因此 `cargo tarpaulin` 步骤未执行。
+
+## 7. 性能与稳定性（本阶段）
 
 - 该模块核心为 O(1) 纯计算与轻量 UI 渲染；未进行 OS 级内存/CPU 采样。
 - 单测执行耗时（参考）：
   - `cargo test`：约 6~14s（取决于是否需要首次编译/缓存）
   - `vitest`：约 3~5s（取决于缓存）
 
-## 7. 验收结论
+## 8. 验收结论
 
 - 功能正确性（单元测试）：**通过**
-- 覆盖率门禁（≥90%）：**无法验证（tarpaulin 在本机未产出报告）**
-- 质量门禁（clippy 无警告）：**不通过（too_many_arguments）**
+- 覆盖率门禁（≥90%）：**不通过（本机 64%）**；CI 当前在构建阶段失败，覆盖率步骤未能执行
+- 质量门禁（clippy 无警告）：**通过**
 
-最终结论：**当前门禁不满足，不能进入下一阶段合并/开发节奏**；请开发 Agent 先修复 clippy，并在可用环境重跑覆盖率后再回归测试。
+最终结论：**功能正确性通过，但覆盖率门禁与 CI 环境门禁未满足**；需要开发 Agent 提升覆盖率并修复 Ubuntu CI 依赖后再回归测试门禁。
 
-## 8. 待修复清单（Bug/门禁）
+## 9. 待修复清单（Bug/门禁）
 
-1. 修复 `clippy::too_many_arguments`（`src-tauri/src/window_layout.rs`、`src-tauri/src/lib.rs`）
-2. 在 CI/可用环境完成 `cargo tarpaulin` 并验证覆盖率 ≥ 90%
+1. 提升覆盖率至 ≥90%：当前 `src/lib.rs`、`src/main.rs` 在 tarpaulin 下为 0 覆盖，需要补齐测试或将不可测入口在 tarpaulin 下排除（与团队规则约定一致）
+2. 修复 GitHub Actions 的 Ubuntu CI native 依赖：安装 GTK/WebKit 等必要依赖，使 `cargo test` 能在 CI 成功构建并执行后续 tarpaulin/clippy/audit 步骤
