@@ -48,6 +48,9 @@ jobs:
       - name: Frontend — Svelte/TS 检查（svelte-check）
         run: npm run check
 
+      - name: Frontend — 单元测试（Vitest）
+        run: npm run test
+
       - name: Rust — 格式化检查（rustfmt）
         working-directory: petpal/src-tauri
         run: cargo fmt --all -- --check
