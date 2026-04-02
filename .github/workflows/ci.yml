@@ -35,7 +35,7 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          components: rustfmt
+          components: rustfmt, clippy, llvm-tools-preview
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
@@ -59,6 +59,10 @@ jobs:
         working-directory: petpal/src-tauri
         run: cargo test --all-features
 
+      - name: Rust — 代码质量（clippy）
+        working-directory: petpal/src-tauri
+        run: cargo clippy --all-targets -- -D warnings
+
       - name: Install cargo-audit
         uses: taiki-e/install-action@v2
         with:
@@ -67,3 +71,12 @@ jobs:
       - name: Rust — 依赖漏洞扫描（cargo audit）
         working-directory: petpal/src-tauri
         run: cargo audit
+
+      - name: Install cargo-tarpaulin
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-tarpaulin
+
+      - name: Rust — 测试覆盖率门禁（tarpaulin）
+        working-directory: petpal/src-tauri
+        run: cargo tarpaulin --all-features --fail-under 90 --engine Llvm --out Lcov
